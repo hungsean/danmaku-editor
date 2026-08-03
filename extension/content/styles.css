@@ -1,0 +1,286 @@
+/*
+ * 動畫瘋彈幕工作台 - 編輯面板樣式。
+ * 這份檔案會以字串形式（?raw）被 editor.ts 讀入，
+ * 並在執行期注入到 Shadow DOM 內的 <style> 標籤，因此可以放心使用一般的 class selector，
+ * 不會外洩到動畫瘋頁面本身。
+ */
+
+.dwb-root {
+  all: initial;
+}
+
+.dwb-root {
+  --dwb-bg: #1b1d22;
+  --dwb-bg-elevated: #24272e;
+  --dwb-border: #3a3d46;
+  --dwb-text: #f0f1f5;
+  --dwb-text-dim: #a3a7b3;
+  --dwb-accent: #4d96ff;
+  --dwb-accent-text: #0b1220;
+  --dwb-danger: #ff5555;
+
+  /*
+   * host 元素是 pointer-events: none，讓影片與網頁本身維持可操作。
+   * 工作台面板必須自行開回來，否則整個面板點不動。
+   * （上方的 all: initial 其實已隱含重設為 auto，這裡明確寫出以免日後被改壞。）
+   */
+  pointer-events: auto;
+
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2147483000;
+
+  display: flex;
+  flex-direction: column;
+
+  width: 320px;
+  max-width: calc(100vw - 32px);
+
+  background: var(--dwb-bg);
+  color: var(--dwb-text);
+  border: 1px solid var(--dwb-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei",
+    Roboto, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.dwb-root *,
+.dwb-root *::before,
+.dwb-root *::after {
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.dwb-root.dwb-root--collapsed {
+  bottom: auto;
+  width: auto;
+}
+
+/* ---------- Header ---------- */
+
+.dwb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--dwb-border);
+  background: var(--dwb-bg-elevated);
+  border-radius: 10px 10px 0 0;
+}
+
+.dwb-root--collapsed .dwb-header {
+  border-bottom: none;
+  border-radius: 10px;
+}
+
+.dwb-title {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dwb-collapse-btn {
+  flex-shrink: 0;
+}
+
+/* ---------- Body ---------- */
+
+.dwb-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 12px 14px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.dwb-root--collapsed .dwb-body {
+  display: none;
+}
+
+.dwb-notice {
+  margin: 0;
+  padding: 8px 10px;
+  background: rgba(255, 217, 61, 0.08);
+  border: 1px solid rgba(255, 217, 61, 0.3);
+  border-radius: 6px;
+  color: #ffd93d;
+  font-size: 11.5px;
+}
+
+/* ---------- Status row ---------- */
+
+.dwb-status {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--dwb-bg-elevated);
+  border: 1px solid var(--dwb-border);
+  border-radius: 6px;
+}
+
+.dwb-status-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dwb-status-label {
+  color: var(--dwb-text-dim);
+}
+
+.dwb-status-value {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Generic buttons / inputs ---------- */
+
+.dwb-root button {
+  cursor: pointer;
+  border: 1px solid var(--dwb-border);
+  background: var(--dwb-bg-elevated);
+  color: var(--dwb-text);
+  border-radius: 5px;
+  padding: 5px 9px;
+  font-size: 12px;
+}
+
+.dwb-root button:hover:not(:disabled) {
+  background: #2f333c;
+}
+
+.dwb-root button:focus-visible,
+.dwb-root input:focus-visible,
+.dwb-root select:focus-visible {
+  outline: 2px solid var(--dwb-accent);
+  outline-offset: 1px;
+}
+
+.dwb-root button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.dwb-root button.dwb-btn--primary {
+  background: var(--dwb-accent);
+  border-color: var(--dwb-accent);
+  color: var(--dwb-accent-text);
+  font-weight: 600;
+}
+
+.dwb-root button.dwb-btn--primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.dwb-root button.dwb-btn--danger {
+  color: var(--dwb-danger);
+}
+
+.dwb-root input,
+.dwb-root select {
+  background: var(--dwb-bg-elevated);
+  color: var(--dwb-text);
+  border: 1px solid var(--dwb-border);
+  border-radius: 5px;
+  padding: 4px 6px;
+  font-size: 12px;
+}
+
+/* ---------- Preview toggle ---------- */
+
+.dwb-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--dwb-bg-elevated);
+  border: 1px solid var(--dwb-border);
+  border-radius: 6px;
+}
+
+.dwb-toggle-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+/* ---------- Add button ---------- */
+
+.dwb-add-btn {
+  width: 100%;
+}
+
+/* ---------- List ---------- */
+
+.dwb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dwb-empty {
+  padding: 16px 10px;
+  text-align: center;
+  color: var(--dwb-text-dim);
+  border: 1px dashed var(--dwb-border);
+  border-radius: 6px;
+}
+
+.dwb-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--dwb-border);
+  border-radius: 6px;
+  background: var(--dwb-bg-elevated);
+}
+
+.dwb-row--selected {
+  border-color: var(--dwb-accent);
+  box-shadow: 0 0 0 1px var(--dwb-accent);
+  background: #1f2c40;
+}
+
+.dwb-row-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dwb-row-time {
+  width: 68px;
+  flex-shrink: 0;
+}
+
+.dwb-row-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.dwb-row-select {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.dwb-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}

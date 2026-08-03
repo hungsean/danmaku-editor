@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "動畫瘋彈幕工作台",
+  "version": "0.1.0",
+  "description": "在動畫瘋播放頁手動製作歌詞彈幕草稿，並在本機預覽效果。不會發送任何彈幕。",
+  "content_scripts": [
+    {
+      "matches": ["https://ani.gamer.com.tw/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ]
+}

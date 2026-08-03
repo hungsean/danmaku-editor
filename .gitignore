@@ -1,0 +1,58 @@
+# 依賴
+node_modules/
+.pnpm-store/
+
+# 建置輸出
+dist/
+*.tsbuildinfo
+
+# 測試與工具快取
+coverage/
+.vitest/
+.vite/
+.cache/
+.eslintcache
+
+# 環境變數與密鑰
+.env
+.env.*
+!.env.example
+
+# 打包產物
+*.zip
+*.xpi
+*.crx
+*.pem
+
+# 日誌
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Xcode / Safari App Extension
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+DerivedData/
+build/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# 編輯器
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp

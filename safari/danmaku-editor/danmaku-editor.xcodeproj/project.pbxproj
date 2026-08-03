@@ -1,0 +1,601 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3FA055013020BFC30018DC57 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FA055003020BFC30018DC57 /* AppDelegate.swift */; };
+		3FA055053020BFC30018DC57 /* Main.html in Resources */ = {isa = PBXBuildFile; fileRef = 3FA055033020BFC30018DC57 /* Main.html */; };
+		3FA055073020BFC30018DC57 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 3FA055063020BFC30018DC57 /* Icon.png */; };
+		3FA055093020BFC30018DC57 /* Style.css in Resources */ = {isa = PBXBuildFile; fileRef = 3FA055083020BFC30018DC57 /* Style.css */; };
+		3FA0550B3020BFC30018DC57 /* Script.js in Resources */ = {isa = PBXBuildFile; fileRef = 3FA0550A3020BFC30018DC57 /* Script.js */; };
+		3FA0550D3020BFC30018DC57 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FA0550C3020BFC30018DC57 /* ViewController.swift */; };
+		3FA055103020BFC30018DC57 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3FA0550E3020BFC30018DC57 /* Main.storyboard */; };
+		3FA055123020BFC40018DC57 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3FA055113020BFC40018DC57 /* Assets.xcassets */; };
+		3FA055193020BFC40018DC57 /* danmaku-editor Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3FA055183020BFC40018DC57 /* danmaku-editor Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		3FA0551E3020BFC40018DC57 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FA0551D3020BFC40018DC57 /* SafariWebExtensionHandler.swift */; };
+		3FA0552C3020BFC50018DC57 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 3FA0552A3020BFC50018DC57 /* manifest.json */; };
+		3FA0552D3020BFC50018DC57 /* content.js in Resources */ = {isa = PBXBuildFile; fileRef = 3FA0552B3020BFC50018DC57 /* content.js */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3FA0551A3020BFC40018DC57 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3FA054F53020BFC30018DC57 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3FA055173020BFC40018DC57;
+			remoteInfo = "danmaku-editor Extension";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		3FA055253020BFC40018DC57 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				3FA055193020BFC40018DC57 /* danmaku-editor Extension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		3FA054FD3020BFC30018DC57 /* danmaku-editor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "danmaku-editor.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3FA055003020BFC30018DC57 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		3FA055043020BFC30018DC57 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = Base; path = Base.lproj/Main.html; sourceTree = "<group>"; };
+		3FA055063020BFC30018DC57 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
+		3FA055083020BFC30018DC57 /* Style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = Style.css; sourceTree = "<group>"; };
+		3FA0550A3020BFC30018DC57 /* Script.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = Script.js; sourceTree = "<group>"; };
+		3FA0550C3020BFC30018DC57 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		3FA0550F3020BFC30018DC57 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		3FA055113020BFC40018DC57 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3FA055133020BFC40018DC57 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3FA055183020BFC40018DC57 /* danmaku-editor Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "danmaku-editor Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3FA0551D3020BFC40018DC57 /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
+		3FA0551F3020BFC40018DC57 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3FA0552A3020BFC50018DC57 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifest.json; path = ../../../dist/manifest.json; sourceTree = "<group>"; };
+		3FA0552B3020BFC50018DC57 /* content.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = content.js; path = ../../../dist/content.js; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3FA054FA3020BFC30018DC57 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3FA055153020BFC40018DC57 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3FA054F43020BFC30018DC57 = {
+			isa = PBXGroup;
+			children = (
+				3FA054FF3020BFC30018DC57 /* danmaku-editor */,
+				3FA0551C3020BFC40018DC57 /* danmaku-editor Extension */,
+				3FA054FE3020BFC30018DC57 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		3FA054FE3020BFC30018DC57 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3FA054FD3020BFC30018DC57 /* danmaku-editor.app */,
+				3FA055183020BFC40018DC57 /* danmaku-editor Extension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3FA054FF3020BFC30018DC57 /* danmaku-editor */ = {
+			isa = PBXGroup;
+			children = (
+				3FA055003020BFC30018DC57 /* AppDelegate.swift */,
+				3FA0550C3020BFC30018DC57 /* ViewController.swift */,
+				3FA0550E3020BFC30018DC57 /* Main.storyboard */,
+				3FA055113020BFC40018DC57 /* Assets.xcassets */,
+				3FA055133020BFC40018DC57 /* Info.plist */,
+				3FA055023020BFC30018DC57 /* Resources */,
+			);
+			path = "danmaku-editor";
+			sourceTree = "<group>";
+		};
+		3FA055023020BFC30018DC57 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				3FA055033020BFC30018DC57 /* Main.html */,
+				3FA055063020BFC30018DC57 /* Icon.png */,
+				3FA055083020BFC30018DC57 /* Style.css */,
+				3FA0550A3020BFC30018DC57 /* Script.js */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		3FA0551C3020BFC40018DC57 /* danmaku-editor Extension */ = {
+			isa = PBXGroup;
+			children = (
+				3FA055293020BFC50018DC57 /* Resources */,
+				3FA0551D3020BFC40018DC57 /* SafariWebExtensionHandler.swift */,
+				3FA0551F3020BFC40018DC57 /* Info.plist */,
+			);
+			path = "danmaku-editor Extension";
+			sourceTree = "<group>";
+		};
+		3FA055293020BFC50018DC57 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				3FA0552A3020BFC50018DC57 /* manifest.json */,
+				3FA0552B3020BFC50018DC57 /* content.js */,
+			);
+			name = Resources;
+			path = "danmaku-editor Extension";
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3FA054FC3020BFC30018DC57 /* danmaku-editor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3FA055263020BFC40018DC57 /* Build configuration list for PBXNativeTarget "danmaku-editor" */;
+			buildPhases = (
+				3FA054F93020BFC30018DC57 /* Sources */,
+				3FA054FA3020BFC30018DC57 /* Frameworks */,
+				3FA054FB3020BFC30018DC57 /* Resources */,
+				3FA055253020BFC40018DC57 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3FA0551B3020BFC40018DC57 /* PBXTargetDependency */,
+			);
+			name = "danmaku-editor";
+			packageProductDependencies = (
+			);
+			productName = "danmaku-editor";
+			productReference = 3FA054FD3020BFC30018DC57 /* danmaku-editor.app */;
+			productType = "com.apple.product-type.application";
+		};
+		3FA055173020BFC40018DC57 /* danmaku-editor Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3FA055223020BFC40018DC57 /* Build configuration list for PBXNativeTarget "danmaku-editor Extension" */;
+			buildPhases = (
+				3FA055143020BFC40018DC57 /* Sources */,
+				3FA055153020BFC40018DC57 /* Frameworks */,
+				3FA055163020BFC40018DC57 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "danmaku-editor Extension";
+			packageProductDependencies = (
+			);
+			productName = "danmaku-editor Extension";
+			productReference = 3FA055183020BFC40018DC57 /* danmaku-editor Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3FA054F53020BFC30018DC57 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2660;
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					3FA054FC3020BFC30018DC57 = {
+						CreatedOnToolsVersion = 26.6;
+					};
+					3FA055173020BFC40018DC57 = {
+						CreatedOnToolsVersion = 26.6;
+					};
+				};
+			};
+			buildConfigurationList = 3FA054F83020BFC30018DC57 /* Build configuration list for PBXProject "danmaku-editor" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 3FA054F43020BFC30018DC57;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 3FA054FE3020BFC30018DC57 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3FA054FC3020BFC30018DC57 /* danmaku-editor */,
+				3FA055173020BFC40018DC57 /* danmaku-editor Extension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3FA054FB3020BFC30018DC57 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3FA055073020BFC30018DC57 /* Icon.png in Resources */,
+				3FA055103020BFC30018DC57 /* Main.storyboard in Resources */,
+				3FA0550B3020BFC30018DC57 /* Script.js in Resources */,
+				3FA055053020BFC30018DC57 /* Main.html in Resources */,
+				3FA055123020BFC40018DC57 /* Assets.xcassets in Resources */,
+				3FA055093020BFC30018DC57 /* Style.css in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3FA055163020BFC40018DC57 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3FA0552D3020BFC50018DC57 /* content.js in Resources */,
+				3FA0552C3020BFC50018DC57 /* manifest.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3FA054F93020BFC30018DC57 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3FA0550D3020BFC30018DC57 /* ViewController.swift in Sources */,
+				3FA055013020BFC30018DC57 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3FA055143020BFC40018DC57 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3FA0551E3020BFC40018DC57 /* SafariWebExtensionHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3FA0551B3020BFC40018DC57 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3FA055173020BFC40018DC57 /* danmaku-editor Extension */;
+			targetProxy = 3FA0551A3020BFC40018DC57 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		3FA055033020BFC30018DC57 /* Main.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				3FA055043020BFC30018DC57 /* Base */,
+			);
+			name = Main.html;
+			sourceTree = "<group>";
+		};
+		3FA0550E3020BFC30018DC57 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				3FA0550F3020BFC30018DC57 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		3FA055203020BFC40018DC57 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		3FA055213020BFC40018DC57 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		3FA055233020BFC40018DC57 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "danmaku-editor Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "danmaku-editor Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.senen.danmaku-editor.Extension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		3FA055243020BFC40018DC57 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "danmaku-editor Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "danmaku-editor Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.senen.danmaku-editor.Extension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		3FA055273020BFC40018DC57 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "danmaku-editor/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "danmaku-editor";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.senen.danmaku-editor";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		3FA055283020BFC40018DC57 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "danmaku-editor/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "danmaku-editor";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.senen.danmaku-editor";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3FA054F83020BFC30018DC57 /* Build configuration list for PBXProject "danmaku-editor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3FA055203020BFC40018DC57 /* Debug */,
+				3FA055213020BFC40018DC57 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3FA055223020BFC40018DC57 /* Build configuration list for PBXNativeTarget "danmaku-editor Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3FA055233020BFC40018DC57 /* Debug */,
+				3FA055243020BFC40018DC57 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3FA055263020BFC40018DC57 /* Build configuration list for PBXNativeTarget "danmaku-editor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3FA055273020BFC40018DC57 /* Debug */,
+				3FA055283020BFC40018DC57 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 3FA054F53020BFC30018DC57 /* Project object */;
+}
