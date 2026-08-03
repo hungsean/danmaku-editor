@@ -118,10 +118,12 @@ const BASE_STYLE =
   "background-color: rgba(255, 255, 255, 0.15);" +
   "border: 1px solid rgba(255, 255, 255, 0.4);"
 
+// 浮動退路刻意放右上角：播放器的原生控制項都集中在底部，
+// 放右下角必定會壓到全螢幕、畫質那一排。
 const FLOATING_STYLE =
   "position: absolute;" +
   "right: 12px;" +
-  "bottom: 12px;" +
+  "top: 12px;" +
   "z-index: 2147483000;"
 
 const OPEN_BACKGROUND = "background-color: #4d96ff;"
@@ -163,8 +165,49 @@ export function createToggleButton(
     element.setAttribute("aria-pressed", open ? "true" : "false")
   }
 
+  /**
+   * 檢查按鈕是否與控制列中任何既有元素重疊。
+   *
+   * 動畫瘋的控制列大量使用絕對定位與右對齊佈局，直接 append 一顆按鈕
+   * 不會替它挪出空間，結果就是壓在全螢幕、畫質那類按鈕上面。
+   * 與其猜測網站的佈局方式，不如插入後實際量測。
+   */
+  function overlapsControlBarContent(bar: HTMLElement): boolean {
+    const own = element.getBoundingClientRect()
+    if (own.width === 0 || own.height === 0) return false
+
+    for (const other of Array.from(bar.querySelectorAll<HTMLElement>("*"))) {
+      // 跳過自己、自己的後代，以及包含自己的祖先（祖先本來就會涵蓋自己）。
+      if (other === element) continue
+      if (element.contains(other) || other.contains(element)) continue
+
+      const rect = other.getBoundingClientRect()
+      if (rect.width === 0 || rect.height === 0) continue
+
+      const overlapX = Math.min(own.right, rect.right) - Math.max(own.left, rect.left)
+      const overlapY = Math.min(own.bottom, rect.bottom) - Math.max(own.top, rect.top)
+      // 容忍 2px 的邊界誤差，避免相鄰元素被誤判成重疊。
+      if (overlapX > 2 && overlapY > 2) return true
+    }
+
+    return false
+  }
+
+  /**
+   * 上次嘗試掛載失敗的時間戳。
+   * attach() 由 animation frame 每幀呼叫，而失敗路徑會跑 querySelectorAll
+   * 與大量 getBoundingClientRect（強制 reflow），每幀重試會拖垮效能，
+   * 因此失敗後要等冷卻時間才再試一次。
+   */
+  let lastFailedAt = 0
+  const RETRY_COOLDOWN_MS = 1000
+
   function attach(video: HTMLVideoElement): boolean {
     if (attachedToControlBar && element.isConnected) return true
+
+    const now = Date.now()
+    if (now - lastFailedAt < RETRY_COOLDOWN_MS) return false
+    lastFailedAt = now
 
     const bar = findControlBar(video)
     if (!bar) {
@@ -173,10 +216,29 @@ export function createToggleButton(
       return false
     }
 
-    bar.appendChild(element)
+    // 依序嘗試幾種插入點，取第一個不會疊到既有元素的。
+    const placements: Array<() => void> = [
+      () => bar.appendChild(element),
+      () => bar.insertBefore(element, bar.firstChild),
+      () => {
+        const last = bar.lastElementChild
+        if (last && last !== element) bar.insertBefore(element, last)
+        else bar.appendChild(element)
+      },
+    ]
+
     attachedToControlBar = true
+    for (const place of placements) {
+      place()
+      applyAppearance()
+      if (!overlapsControlBarContent(bar)) return true
+    }
+
+    // 每個插入點都會疊到既有控制項，改用浮動退路，不要破壞網站原本的按鈕。
+    element.remove()
+    attachedToControlBar = false
     applyAppearance()
-    return true
+    return false
   }
 
   function isAttachedToControlBar(): boolean {

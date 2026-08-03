@@ -48,24 +48,28 @@ function findVideo(): HTMLVideoElement | null {
 }
 
 /**
- * 從 video 往上找「播放器區塊」的最外層節點。
+ * 從 video 往上找「內容區」容器：同時包含播放器與右側彈幕列表的那一層。
  *
- * 用高度當作判斷依據：播放器容器的高度會貼近影片本身，
- * 一旦某層祖先明顯比影片高，代表它已經包含了標題、選集等其他內容，
- * 此時停在上一層，那層就是播放器區塊。不依賴任何 class 名稱。
+ * 面板要橫跨整個內容區而不只是影片寬度，否則右側會空一大塊。
+ * 判斷方式是往上走到第一個明顯比影片寬的祖先，不依賴任何 class 名稱。
+ * 若該祖先寬得離譜（通常代表已經走到 body 或整頁容器），就放棄改用影片本身，
+ * 免得面板橫跨整個瀏覽器視窗。
  */
-function findPlayerContainer(video: HTMLVideoElement): HTMLElement {
-  const videoHeight = video.getBoundingClientRect().height
-  let node: HTMLElement = video
+function findContentContainer(video: HTMLVideoElement): HTMLElement {
+  const videoWidth = video.getBoundingClientRect().width
+  if (videoWidth <= 0) return video
 
+  let node: HTMLElement = video
   while (node.parentElement && node.parentElement !== document.body) {
     const parent = node.parentElement
-    const rect = parent.getBoundingClientRect()
-    if (videoHeight > 0 && rect.height > videoHeight * 1.4) break
+    const width = parent.getBoundingClientRect().width
+    if (width > videoWidth * 1.05) {
+      return width > videoWidth * 2.5 ? video : parent
+    }
     node = parent
   }
 
-  return node
+  return video
 }
 
 type InternalPlayer = PlayerHandle & {
@@ -234,11 +238,15 @@ function mount(): void {
   floatingButtonWrapper.style.cssText = "position:fixed;pointer-events:none;display:none;"
   overlayRoot.appendChild(floatingButtonWrapper)
 
-  // --- 頁面流 host：時間軸工作台 ---
+  // --- 懸浮視窗 host：時間軸工作台 ---
+  // 刻意不插進頁面流，避免改動動畫瘋的版面。
+  // 位置固定貼齊影片正下方（對齊影片左緣與寬度），不可拖曳，
+  // 效果等同嵌入版，差別只在於它是蓋在標題選集區上而不是把它們往下推。
   const panelHost = document.createElement("div")
   panelHost.id = PANEL_HOST_ID
-  panelHost.style.cssText = "display:block;width:100%;"
+  panelHost.style.cssText = "position:fixed;z-index:2147483001;display:block;left:0;top:0;width:0;"
   const panelRoot = panelHost.attachShadow({ mode: "open" })
+  document.documentElement.appendChild(panelHost)
 
   const panel = createTimelinePanel({
     store,
@@ -258,27 +266,26 @@ function mount(): void {
     },
   })
 
+  // 面板與影片下緣的間距，以及上一幀寫入的定位值（用來省下重複的 style 寫入）。
+  const PANEL_GAP_PX = 4
+  let lastPanelLeft = Number.NaN
+  let lastPanelTop = Number.NaN
+  let lastPanelWidth = Number.NaN
+
   /**
-   * 把面板插到播放器容器後方（也就是標題選集區之前）。
-   * SPA 換集時整塊播放器可能被重建，因此需要持續確認面板是否還在正確位置。
-   *
-   * findPlayerContainer 會逐層呼叫 getBoundingClientRect 強制 reflow，
-   * 每幀都跑會拖垮效能，所以快取結果，只在快取失效時才重新計算。
+   * 內容區容器的快取。
+   * findContentContainer 會逐層 getBoundingClientRect 強制 reflow，
+   * 每幀重算會拖垮效能，因此只在快取失效（換集、SPA 重建）時重新尋找。
    */
-  let cachedContainer: HTMLElement | null = null
+  let cachedContent: HTMLElement | null = null
+  let cachedContentFor: HTMLVideoElement | null = null
 
-  const ensurePanelPlacement = (video: HTMLVideoElement): void => {
-    if (
-      cachedContainer !== null &&
-      cachedContainer.isConnected &&
-      panelHost.isConnected &&
-      panelHost.previousElementSibling === cachedContainer
-    ) {
-      return
+  const getContentRect = (video: HTMLVideoElement): DOMRect => {
+    if (cachedContentFor !== video || cachedContent === null || !cachedContent.isConnected) {
+      cachedContent = findContentContainer(video)
+      cachedContentFor = video
     }
-
-    cachedContainer = findPlayerContainer(video)
-    cachedContainer.insertAdjacentElement("afterend", panelHost)
+    return cachedContent.getBoundingClientRect()
   }
 
   let frame = 0
@@ -287,8 +294,6 @@ function mount(): void {
     const video = player.getVideo()
 
     if (video) {
-      ensurePanelPlacement(video)
-
       // 切換按鈕優先掛進網站自己的控制列；失敗才退回浮動按鈕。
       if (toggleButton.attach(video)) {
         floatingButtonWrapper.style.display = "none"
@@ -308,6 +313,24 @@ function mount(): void {
     }
 
     const rect = player.getRect()
+
+    // 面板貼齊影片正下方，寬度橫跨整個內容區（含右側彈幕列表那一欄）。
+    // 每幀寫入 style 會觸發多餘的樣式重算，因此值沒變就不寫。
+    if (rect && video) {
+      const contentRect = getContentRect(video)
+      const left = Math.round(contentRect.left)
+      const top = Math.round(rect.bottom + PANEL_GAP_PX)
+      const width = Math.round(contentRect.width)
+      if (left !== lastPanelLeft || top !== lastPanelTop || width !== lastPanelWidth) {
+        panelHost.style.left = `${left}px`
+        panelHost.style.top = `${top}px`
+        panelHost.style.width = `${width}px`
+        lastPanelLeft = left
+        lastPanelTop = top
+        lastPanelWidth = width
+      }
+    }
+
     if (rect && previewEnabled) {
       previewWrapper.style.display = "block"
       previewWrapper.style.left = `${rect.left}px`
