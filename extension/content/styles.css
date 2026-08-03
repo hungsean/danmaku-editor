@@ -1,286 +1,344 @@
 /*
- * 動畫瘋彈幕工作台 - 編輯面板樣式。
- * 這份檔案會以字串形式（?raw）被 editor.ts 讀入，
+ * 動畫瘋彈幕工作台 - 時間軸工作台面板樣式。
+ * 這份檔案會以字串形式（?raw）被 timeline-panel.ts 讀入，
  * 並在執行期注入到 Shadow DOM 內的 <style> 標籤，因此可以放心使用一般的 class selector，
  * 不會外洩到動畫瘋頁面本身。
  */
 
-.dwb-root {
+.tp-root {
   all: initial;
 }
 
-.dwb-root {
-  --dwb-bg: #1b1d22;
-  --dwb-bg-elevated: #24272e;
-  --dwb-border: #3a3d46;
-  --dwb-text: #f0f1f5;
-  --dwb-text-dim: #a3a7b3;
-  --dwb-accent: #4d96ff;
-  --dwb-accent-text: #0b1220;
-  --dwb-danger: #ff5555;
+.tp-root {
+  --tp-bg: #1b1d22;
+  --tp-bg-elevated: #24272e;
+  --tp-bg-track: #1f2127;
+  --tp-border: #3a3d46;
+  --tp-text: #f0f1f5;
+  --tp-text-dim: #a3a7b3;
+  --tp-accent: #4d96ff;
+  --tp-accent-text: #0b1220;
+  --tp-danger: #ff5555;
 
-  /*
-   * host 元素是 pointer-events: none，讓影片與網頁本身維持可操作。
-   * 工作台面板必須自行開回來，否則整個面板點不動。
-   * （上方的 all: initial 其實已隱含重設為 auto，這裡明確寫出以免日後被改壞。）
-   */
   pointer-events: auto;
-
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  bottom: 16px;
-  z-index: 2147483000;
 
   display: flex;
   flex-direction: column;
 
-  width: 320px;
-  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
+  width: 100%;
+  height: 230px;
 
-  background: var(--dwb-bg);
-  color: var(--dwb-text);
-  border: 1px solid var(--dwb-border);
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  background: var(--tp-bg);
+  color: var(--tp-text);
+  border: 1px solid var(--tp-border);
+  border-radius: 8px;
+  overflow: hidden;
 
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei",
     Roboto, sans-serif;
   font-size: 13px;
-  line-height: 1.45;
-
-  box-sizing: border-box;
-  overflow: hidden;
+  line-height: 1.4;
 }
 
-.dwb-root *,
-.dwb-root *::before,
-.dwb-root *::after {
+.tp-root *,
+.tp-root *::before,
+.tp-root *::after {
   box-sizing: border-box;
   font-family: inherit;
 }
 
-.dwb-root.dwb-root--collapsed {
-  bottom: auto;
-  width: auto;
-}
+/* ---------- 通用控制項 ---------- */
 
-/* ---------- Header ---------- */
-
-.dwb-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--dwb-border);
-  background: var(--dwb-bg-elevated);
-  border-radius: 10px 10px 0 0;
-}
-
-.dwb-root--collapsed .dwb-header {
-  border-bottom: none;
-  border-radius: 10px;
-}
-
-.dwb-title {
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.dwb-collapse-btn {
+.tp-root button {
+  cursor: pointer;
+  border: 1px solid var(--tp-border);
+  background: var(--tp-bg-elevated);
+  color: var(--tp-text);
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 12px;
   flex-shrink: 0;
 }
 
-/* ---------- Body ---------- */
-
-.dwb-body {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px 12px 14px;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-.dwb-root--collapsed .dwb-body {
-  display: none;
-}
-
-.dwb-notice {
-  margin: 0;
-  padding: 8px 10px;
-  background: rgba(255, 217, 61, 0.08);
-  border: 1px solid rgba(255, 217, 61, 0.3);
-  border-radius: 6px;
-  color: #ffd93d;
-  font-size: 11.5px;
-}
-
-/* ---------- Status row ---------- */
-
-.dwb-status {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 8px 10px;
-  background: var(--dwb-bg-elevated);
-  border: 1px solid var(--dwb-border);
-  border-radius: 6px;
-}
-
-.dwb-status-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.dwb-status-label {
-  color: var(--dwb-text-dim);
-}
-
-.dwb-status-value {
-  font-variant-numeric: tabular-nums;
-}
-
-/* ---------- Generic buttons / inputs ---------- */
-
-.dwb-root button {
-  cursor: pointer;
-  border: 1px solid var(--dwb-border);
-  background: var(--dwb-bg-elevated);
-  color: var(--dwb-text);
-  border-radius: 5px;
-  padding: 5px 9px;
-  font-size: 12px;
-}
-
-.dwb-root button:hover:not(:disabled) {
+.tp-root button:hover:not(:disabled) {
   background: #2f333c;
 }
 
-.dwb-root button:focus-visible,
-.dwb-root input:focus-visible,
-.dwb-root select:focus-visible {
-  outline: 2px solid var(--dwb-accent);
+.tp-root button:focus-visible,
+.tp-root input:focus-visible,
+.tp-root select:focus-visible {
+  outline: 2px solid var(--tp-accent);
   outline-offset: 1px;
 }
 
-.dwb-root button:disabled {
+.tp-root button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 
-.dwb-root button.dwb-btn--primary {
-  background: var(--dwb-accent);
-  border-color: var(--dwb-accent);
-  color: var(--dwb-accent-text);
+.tp-root .tp-btn--primary {
+  background: var(--tp-accent);
+  border-color: var(--tp-accent);
+  color: var(--tp-accent-text);
   font-weight: 600;
 }
 
-.dwb-root button.dwb-btn--primary:hover:not(:disabled) {
+.tp-root .tp-btn--primary:hover:not(:disabled) {
   filter: brightness(1.08);
 }
 
-.dwb-root button.dwb-btn--danger {
-  color: var(--dwb-danger);
+.tp-root .tp-btn--danger {
+  color: var(--tp-danger);
 }
 
-.dwb-root input,
-.dwb-root select {
-  background: var(--dwb-bg-elevated);
-  color: var(--dwb-text);
-  border: 1px solid var(--dwb-border);
+.tp-root input,
+.tp-root select {
+  background: var(--tp-bg-elevated);
+  color: var(--tp-text);
+  border: 1px solid var(--tp-border);
   border-radius: 5px;
   padding: 4px 6px;
   font-size: 12px;
 }
 
-/* ---------- Preview toggle ---------- */
+/* ---------- 工具列 ---------- */
 
-.dwb-toggle-row {
+.tp-toolbar {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
-  padding: 8px 10px;
-  background: var(--dwb-bg-elevated);
-  border: 1px solid var(--dwb-border);
-  border-radius: 6px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--tp-border);
+  background: var(--tp-bg-elevated);
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
 }
 
-.dwb-toggle-row label {
+.tp-time-text {
+  font-variant-numeric: tabular-nums;
+  color: var(--tp-text-dim);
+  flex-shrink: 0;
+  min-width: 4.5em;
+}
+
+.tp-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
+  flex-shrink: 0;
+  color: var(--tp-text-dim);
 }
 
-/* ---------- Add button ---------- */
-
-.dwb-add-btn {
-  width: 100%;
-}
-
-/* ---------- List ---------- */
-
-.dwb-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.dwb-empty {
-  padding: 16px 10px;
-  text-align: center;
-  color: var(--dwb-text-dim);
-  border: 1px dashed var(--dwb-border);
-  border-radius: 6px;
-}
-
-.dwb-row {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 8px;
-  border: 1px solid var(--dwb-border);
-  border-radius: 6px;
-  background: var(--dwb-bg-elevated);
-}
-
-.dwb-row--selected {
-  border-color: var(--dwb-accent);
-  box-shadow: 0 0 0 1px var(--dwb-accent);
-  background: #1f2c40;
-}
-
-.dwb-row-line {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.dwb-row-time {
-  width: 68px;
+.tp-zoom-text {
+  color: var(--tp-text-dim);
+  font-size: 11.5px;
   flex-shrink: 0;
 }
 
-.dwb-row-text {
+.tp-ready-hint {
+  color: #ffd93d;
+  font-size: 11.5px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* ---------- 時間軸主體 ---------- */
+
+.tp-timeline-wrap {
   flex: 1 1 auto;
-  min-width: 0;
+  min-height: 0;
+  display: flex;
 }
 
-.dwb-row-select {
+.tp-labels-col {
+  flex: 0 0 auto;
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--tp-border);
+  background: var(--tp-bg-elevated);
+}
+
+.tp-ruler-spacer {
+  flex: 0 0 22px;
+  border-bottom: 1px solid var(--tp-border);
+}
+
+.tp-lane-label {
   flex: 1 1 0;
-  min-width: 0;
-}
-
-.dwb-row-actions {
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  padding: 0 8px;
+  font-size: 11px;
+  color: var(--tp-text-dim);
+  border-bottom: 1px solid var(--tp-border);
+}
+
+.tp-lane-label:last-child {
+  border-bottom: none;
+}
+
+.tp-track-col {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tp-ruler {
+  position: relative;
+  flex: 0 0 22px;
+  border-bottom: 1px solid var(--tp-border);
+  overflow: hidden;
+  background: var(--tp-bg);
+  cursor: pointer;
+}
+
+.tp-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--tp-border);
+}
+
+.tp-tick--major {
+  width: 1px;
+  background: var(--tp-text-dim);
+}
+
+.tp-tick-label {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  font-size: 10px;
+  color: var(--tp-text-dim);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.tp-lanes {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tp-lane-track {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  border-bottom: 1px solid var(--tp-border);
+  background: var(--tp-bg-track);
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+.tp-lane-track:last-child {
+  border-bottom: none;
+}
+
+.tp-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-1px);
+  background: var(--tp-danger);
+  box-shadow: 0 0 4px rgba(255, 85, 85, 0.7);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ---------- 彈幕區塊 ---------- */
+
+.tp-block {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  border-radius: 4px;
+  border-left: 3px solid var(--tp-accent);
+  background: rgba(77, 150, 255, 0.28);
+  overflow: hidden;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  z-index: 2;
+}
+
+.tp-block:active {
+  cursor: grabbing;
+}
+
+.tp-block-text {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--tp-text);
+  pointer-events: none;
+}
+
+.tp-block--empty {
+  border-left-style: dashed;
+  opacity: 0.65;
+}
+
+.tp-block--empty .tp-block-text {
+  font-style: italic;
+  color: var(--tp-text-dim);
+}
+
+.tp-block--selected {
+  outline: 2px solid var(--tp-accent);
+  outline-offset: 1px;
+  z-index: 3;
+}
+
+/* ---------- 詳細編輯列 ---------- */
+
+.tp-detail {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  border-top: 1px solid var(--tp-border);
+  background: var(--tp-bg-elevated);
+}
+
+.tp-detail-empty {
+  color: var(--tp-text-dim);
+  font-size: 12px;
+  text-align: center;
+  padding: 6px 0;
+}
+
+.tp-detail-form {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
+}
+
+.tp-detail-text {
+  flex: 1 1 200px;
+  min-width: 120px;
+}
+
+.tp-detail-time {
+  width: 80px;
+  flex-shrink: 0;
 }

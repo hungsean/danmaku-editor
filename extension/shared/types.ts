@@ -74,6 +74,10 @@ export type PlayerHandle = {
   isPlaying(): boolean
   play(): void
   pause(): void
+  /** 跳轉到指定秒數；未綁定時為 no-op。 */
+  seek(seconds: number): void
+  /** 影片總長度（秒）；未知或未綁定時回傳 null。 */
+  getDuration(): number | null
   /** 播放器視覺區域的尺寸，供預覽層計算用；未綁定時回傳 null。 */
   getViewportSize(): { width: number; height: number } | null
 }
@@ -98,8 +102,26 @@ export type DraftStore = {
 // UI 模組契約
 // ---------------------------------------------------------------------------
 
-/** editor.ts 匯出的工廠函式簽章。 */
-export type EditorDeps = {
+/**
+ * 時間軸視窗：以目前播放時間為中心，前後各展開 halfSpanSec 秒。
+ * 這是純資料，實際換算由 timeline.ts 的純函式負責。
+ */
+export type TimelineWindow = {
+  start: number
+  end: number
+}
+
+/** 時間軸可選的縮放級距（半視窗秒數）。數字越小代表放得越大。 */
+export const TIMELINE_ZOOM_LEVELS: ReadonlyArray<number> = [5, 10, 15, 30, 60]
+
+/** 預設縮放級距在 TIMELINE_ZOOM_LEVELS 中的索引。 */
+export const DEFAULT_ZOOM_INDEX = 2
+
+/** 時間軸的三條軌道，依彈幕位置分列，讓使用者一眼看出類型。 */
+export const TIMELINE_LANES: ReadonlyArray<DanmakuPosition> = ["scroll", "top", "bottom"]
+
+/** timeline-panel.ts 匯出的工廠函式簽章。 */
+export type TimelinePanelDeps = {
   store: DraftStore
   player: PlayerHandle
   /** 讀取目前預覽開關狀態。 */
@@ -108,10 +130,25 @@ export type EditorDeps = {
   setPreviewEnabled(enabled: boolean): void
 }
 
-export type EditorHandle = {
-  /** 工作台面板的根節點，由 main.ts 掛進 Shadow DOM。 */
+export type TimelinePanelHandle = {
+  /** 面板根節點，由 main.ts 插入到播放器容器下方。 */
   readonly element: HTMLElement
-  /** 每個 animation frame 由 main.ts 呼叫，用於更新播放狀態列。 */
+  /** 每個 animation frame 由 main.ts 呼叫：更新播放頭與狀態列。 */
+  tick(): void
+  destroy(): void
+}
+
+/** toggle-button.ts 匯出的工廠函式簽章。 */
+export type ToggleButtonDeps = {
+  /** 讀取工作台是否展開。 */
+  isOpen(): boolean
+  /** 切換工作台展開狀態。 */
+  toggle(): void
+}
+
+export type ToggleButtonHandle = {
+  readonly element: HTMLElement
+  /** 依目前展開狀態更新外觀。 */
   tick(): void
   destroy(): void
 }
