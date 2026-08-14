@@ -8,14 +8,18 @@ import type { DanmakuDraft, PreviewDeps, PreviewHandle } from "../shared/types.j
 import { SIZE_FONT_PX } from "../shared/types.js"
 import { getScrollX, getVisibleDanmaku } from "../shared/timeline.js"
 
-/** 上下固定彈幕的軌道數（垂直方向可分配的行數）。 */
-const FIXED_TRACK_COUNT = 4
-/** 滑動彈幕的軌道數。 */
-const SCROLL_TRACK_COUNT = 6
-/** 上下軌道之間的間距（px），實際字級另外疊加。 */
+/** 同一軌道內，相鄰彈幕列之間的間距（px），實際字級另外疊加。 */
 const TRACK_GAP_PX = 6
-/** 距上緣／下緣的安全邊界（px）。 */
+/** 每條軌道區塊內、上緣的安全邊界（px）。 */
 const SAFE_MARGIN_PX = 8
+/**
+ * 同一軌道區塊內，子列雜湊分配的上限。
+ * 若不設上限，子列數會隨區塊高度線性增加（軌道數愈少、區塊愈高），
+ * 雜湊值就可能把單獨一則彈幕分到離錨定邊緣很遠的子列，看起來像「位置跑掉」。
+ * 固定／滑動各自沿用原本三軌設計時的密度，維持視覺上的貼齊感。
+ */
+const MAX_FIXED_SUB_TRACKS = 4
+const MAX_SCROLL_SUB_TRACKS = 6
 
 type PoolEntry = {
   el: HTMLDivElement
@@ -33,12 +37,12 @@ function hashString(input: string): number {
   return Math.abs(hash)
 }
 
-function trackForDraft(draft: DanmakuDraft, trackCount: number): number {
-  return hashString(draft.id) % trackCount
+function subTrackForDraft(draft: DanmakuDraft, subTrackCount: number): number {
+  return hashString(draft.id) % subTrackCount
 }
 
 export function createPreview(deps: PreviewDeps): PreviewHandle {
-  const { store, player } = deps
+  const { store, trackStore, player } = deps
 
   const element = document.createElement("div")
   element.setAttribute("data-danmaku-preview-root", "")
@@ -88,19 +92,33 @@ export function createPreview(deps: PreviewDeps): PreviewHandle {
     pool.clear()
   }
 
-  function verticalPositionFor(draft: DanmakuDraft, viewportHeight: number, fontPx: number): number {
-    const trackHeight = fontPx + TRACK_GAP_PX
-    if (draft.position === "top") {
-      const track = trackForDraft(draft, FIXED_TRACK_COUNT)
-      return SAFE_MARGIN_PX + track * trackHeight
+  /**
+   * 每條軌道各自佔用螢幕高度中平均分配到的一個水平區塊（依軌道順序由上到下排列）。
+   * 區塊內依彈幕自己的 behavior 決定貼齊區塊上緣還是下緣；
+   * 同一區塊內若同時有多則彈幕，再用雜湊值分配子列，避免互相重疊。
+   */
+  function verticalPositionFor(
+    draft: DanmakuDraft,
+    trackIndex: number,
+    trackCount: number,
+    viewportHeight: number,
+    fontPx: number,
+  ): number {
+    const bandHeight = viewportHeight / trackCount
+    const bandTop = trackIndex * bandHeight
+    const rowHeight = fontPx + TRACK_GAP_PX
+    const maxSubTracks = draft.behavior === "scroll" ? MAX_SCROLL_SUB_TRACKS : MAX_FIXED_SUB_TRACKS
+    const subTrackCount = Math.max(
+      1,
+      Math.min(maxSubTracks, Math.floor((bandHeight - SAFE_MARGIN_PX) / rowHeight)),
+    )
+    const subTrack = subTrackForDraft(draft, subTrackCount)
+
+    if (draft.behavior === "bottom") {
+      return bandTop + bandHeight - SAFE_MARGIN_PX - fontPx - subTrack * rowHeight
     }
-    if (draft.position === "bottom") {
-      const track = trackForDraft(draft, FIXED_TRACK_COUNT)
-      return viewportHeight - SAFE_MARGIN_PX - fontPx - track * trackHeight
-    }
-    // scroll
-    const track = trackForDraft(draft, SCROLL_TRACK_COUNT)
-    return SAFE_MARGIN_PX + track * trackHeight
+    // "scroll" 與 "top" 都貼齊區塊上緣，差別只在於是否橫向移動。
+    return bandTop + SAFE_MARGIN_PX + subTrack * rowHeight
   }
 
   function render(currentTime: number | null, enabled: boolean): void {
@@ -114,6 +132,9 @@ export function createPreview(deps: PreviewDeps): PreviewHandle {
       clearAll()
       return
     }
+
+    const tracks = trackStore.getAll()
+    const trackIndexById = new Map<string, number>(tracks.map((track, index) => [track.id, index]))
 
     const visible = getVisibleDanmaku(store.getAll(), currentTime)
     const seen = new Set<string>()
@@ -144,9 +165,10 @@ export function createPreview(deps: PreviewDeps): PreviewHandle {
         entry.lastSize = draft.size
       }
 
-      const y = verticalPositionFor(draft, viewport.height, fontPx)
+      const trackIndex = trackIndexById.get(draft.trackId) ?? 0
+      const y = verticalPositionFor(draft, trackIndex, Math.max(1, tracks.length), viewport.height, fontPx)
       let x: number
-      if (draft.position === "scroll") {
+      if (draft.behavior === "scroll") {
         const textWidth = entry.el.offsetWidth
         x = getScrollX(progress, viewport.width, textWidth)
       } else {

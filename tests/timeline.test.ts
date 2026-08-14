@@ -3,7 +3,7 @@ import {
   clampTime,
   formatTime,
   getDraftsInWindow,
-  getDurationForPosition,
+  getDurationForBehavior,
   getPixelsPerSecond,
   getRulerTicks,
   getScrollX,
@@ -15,7 +15,7 @@ import {
   timeToX,
   xToTime,
 } from "../extension/shared/timeline.js"
-import type { DanmakuDraft, DanmakuPosition, TimelineWindow } from "../extension/shared/types.js"
+import type { DanmakuDraft, DanmakuBehavior, TimelineWindow } from "../extension/shared/types.js"
 import { FIXED_DURATION_SEC, SCROLL_DURATION_SEC } from "../extension/shared/types.js"
 
 function makeDraft(overrides: Partial<DanmakuDraft> = {}): DanmakuDraft {
@@ -23,31 +23,32 @@ function makeDraft(overrides: Partial<DanmakuDraft> = {}): DanmakuDraft {
     id: "d1",
     time: 10,
     text: "測試彈幕",
-    position: "scroll",
+    trackId: "t1",
+    behavior: "scroll",
     size: "medium",
     color: "#ffffff",
     ...overrides,
   }
 }
 
-describe("getDurationForPosition", () => {
+describe("getDurationForBehavior", () => {
   it("scroll 使用 SCROLL_DURATION_SEC", () => {
-    expect(getDurationForPosition("scroll")).toBe(SCROLL_DURATION_SEC)
+    expect(getDurationForBehavior("scroll")).toBe(SCROLL_DURATION_SEC)
   })
 
   it("top 使用 FIXED_DURATION_SEC", () => {
-    expect(getDurationForPosition("top")).toBe(FIXED_DURATION_SEC)
+    expect(getDurationForBehavior("top")).toBe(FIXED_DURATION_SEC)
   })
 
   it("bottom 使用 FIXED_DURATION_SEC", () => {
-    expect(getDurationForPosition("bottom")).toBe(FIXED_DURATION_SEC)
+    expect(getDurationForBehavior("bottom")).toBe(FIXED_DURATION_SEC)
   })
 })
 
 describe("getVisibility", () => {
-  describe.each<DanmakuPosition>(["scroll", "top", "bottom"])("position=%s", (position) => {
-    const duration = getDurationForPosition(position)
-    const draft = makeDraft({ time: 10, position })
+  describe.each<DanmakuBehavior>(["scroll", "top", "bottom"])("behavior=%s", (behavior) => {
+    const duration = getDurationForBehavior(behavior)
+    const draft = makeDraft({ time: 10, behavior })
 
     it("currentTime 早於 draft.time 時不可見", () => {
       expect(getVisibility(draft, 9.9)).toEqual({ visible: false })
@@ -93,8 +94,8 @@ describe("getVisibility", () => {
   })
 
   it("scroll 與 fixed 的顯示時長確實不同", () => {
-    const scrollDraft = makeDraft({ time: 0, position: "scroll" })
-    const topDraft = makeDraft({ time: 0, position: "top" })
+    const scrollDraft = makeDraft({ time: 0, behavior: "scroll" })
+    const topDraft = makeDraft({ time: 0, behavior: "top" })
 
     // 在 FIXED_DURATION_SEC 之後、SCROLL_DURATION_SEC 之前，scroll 仍可見但 top 已不可見
     const t = (FIXED_DURATION_SEC + SCROLL_DURATION_SEC) / 2
@@ -110,9 +111,9 @@ describe("getVisibleDanmaku", () => {
 
   it("只回傳目前可見的彈幕，並附上 progress", () => {
     const drafts: DanmakuDraft[] = [
-      makeDraft({ id: "a", time: 0, position: "scroll" }), // 顯示 [0,6)
-      makeDraft({ id: "b", time: 5, position: "top" }), // 顯示 [5,8)
-      makeDraft({ id: "c", time: 20, position: "bottom" }), // 顯示 [20,23)
+      makeDraft({ id: "a", time: 0, behavior: "scroll" }), // 顯示 [0,6)
+      makeDraft({ id: "b", time: 5, behavior: "top" }), // 顯示 [5,8)
+      makeDraft({ id: "c", time: 20, behavior: "bottom" }), // 顯示 [20,23)
     ]
 
     const result = getVisibleDanmaku(drafts, 5.5)
@@ -127,16 +128,16 @@ describe("getVisibleDanmaku", () => {
 
   it("沒有任何彈幕可見時回傳空陣列", () => {
     const drafts: DanmakuDraft[] = [
-      makeDraft({ id: "a", time: 100, position: "scroll" }),
+      makeDraft({ id: "a", time: 100, behavior: "scroll" }),
     ]
     expect(getVisibleDanmaku(drafts, 5)).toEqual([])
   })
 
   it("維持輸入順序（僅過濾，不重新排序）", () => {
     const drafts: DanmakuDraft[] = [
-      makeDraft({ id: "x", time: 0, position: "top" }),
-      makeDraft({ id: "y", time: 0, position: "top" }),
-      makeDraft({ id: "z", time: 0, position: "top" }),
+      makeDraft({ id: "x", time: 0, behavior: "top" }),
+      makeDraft({ id: "y", time: 0, behavior: "top" }),
+      makeDraft({ id: "z", time: 0, behavior: "top" }),
     ]
     const result = getVisibleDanmaku(drafts, 1)
     expect(result.map((r) => r.draft.id)).toEqual(["x", "y", "z"])
@@ -357,15 +358,15 @@ describe("getSecondsPerPixel / getPixelsPerSecond", () => {
 
 describe("getDraftsInWindow", () => {
   it("完全落在視窗內的彈幕會被包含", () => {
-    const drafts = [makeDraft({ id: "a", time: 15, position: "top" })] // [15,18)
+    const drafts = [makeDraft({ id: "a", time: 15, behavior: "top" })] // [15,18)
     const window: TimelineWindow = { start: 10, end: 20 }
     expect(getDraftsInWindow(drafts, window).map((d) => d.id)).toEqual(["a"])
   })
 
   it("完全在視窗之外的彈幕會被排除", () => {
     const drafts = [
-      makeDraft({ id: "before", time: -10, position: "top" }), // [-10,-7)
-      makeDraft({ id: "after", time: 100, position: "top" }), // [100,103)
+      makeDraft({ id: "before", time: -10, behavior: "top" }), // [-10,-7)
+      makeDraft({ id: "after", time: 100, behavior: "top" }), // [100,103)
     ]
     const window: TimelineWindow = { start: 0, end: 20 }
     expect(getDraftsInWindow(drafts, window)).toEqual([])
@@ -373,32 +374,32 @@ describe("getDraftsInWindow", () => {
 
   it("在 window.start 之前開始但延續到視窗內的彈幕要被包含", () => {
     // scroll duration = 6，time=-3 -> 顯示區間 [-3,3)，視窗 [0,20) 有重疊
-    const drafts = [makeDraft({ id: "a", time: -3, position: "scroll" })]
+    const drafts = [makeDraft({ id: "a", time: -3, behavior: "scroll" })]
     const window: TimelineWindow = { start: 0, end: 20 }
     expect(getDraftsInWindow(drafts, window).map((d) => d.id)).toEqual(["a"])
   })
 
   it("顯示區間剛好在 window.start 結束時不算重疊", () => {
     // top duration = 3，time=-3 -> 顯示區間 [-3,0)，window.start=0，無重疊
-    const drafts = [makeDraft({ id: "a", time: -3, position: "top" })]
+    const drafts = [makeDraft({ id: "a", time: -3, behavior: "top" })]
     const window: TimelineWindow = { start: 0, end: 20 }
     expect(getDraftsInWindow(drafts, window)).toEqual([])
   })
 
   it("顯示區間剛好在 window.end 開始時不算重疊", () => {
-    const drafts = [makeDraft({ id: "a", time: 20, position: "top" })] // [20,23)
+    const drafts = [makeDraft({ id: "a", time: 20, behavior: "top" })] // [20,23)
     const window: TimelineWindow = { start: 0, end: 20 }
     expect(getDraftsInWindow(drafts, window)).toEqual([])
   })
 
   it("顯示區間剛好涵蓋到 window.end 前一刻時仍算重疊", () => {
-    const drafts = [makeDraft({ id: "a", time: 19.99, position: "top" })] // [19.99,22.99)
+    const drafts = [makeDraft({ id: "a", time: 19.99, behavior: "top" })] // [19.99,22.99)
     const window: TimelineWindow = { start: 0, end: 20 }
     expect(getDraftsInWindow(drafts, window).map((d) => d.id)).toEqual(["a"])
   })
 
   it("視窗無效時回傳空陣列", () => {
-    const drafts = [makeDraft({ id: "a", time: 5, position: "top" })]
+    const drafts = [makeDraft({ id: "a", time: 5, behavior: "top" })]
     expect(getDraftsInWindow(drafts, { start: 10, end: 5 })).toEqual([])
     expect(getDraftsInWindow(drafts, { start: 10, end: 10 })).toEqual([])
   })
@@ -409,9 +410,9 @@ describe("getDraftsInWindow", () => {
 
   it("維持輸入順序", () => {
     const drafts = [
-      makeDraft({ id: "x", time: 1, position: "top" }),
-      makeDraft({ id: "y", time: 2, position: "top" }),
-      makeDraft({ id: "z", time: 3, position: "top" }),
+      makeDraft({ id: "x", time: 1, behavior: "top" }),
+      makeDraft({ id: "y", time: 2, behavior: "top" }),
+      makeDraft({ id: "z", time: 3, behavior: "top" }),
     ]
     const window: TimelineWindow = { start: 0, end: 20 }
     expect(getDraftsInWindow(drafts, window).map((d) => d.id)).toEqual(["x", "y", "z"])

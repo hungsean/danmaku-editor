@@ -3,14 +3,27 @@
  * 這個檔案不可 import 任何瀏覽器 API 或其他模組，確保可被純邏輯測試引用。
  */
 
-export type DanmakuPosition = "scroll" | "top" | "bottom"
+/** 彈幕的動畫行為：滑動（橫向移動）、固定於上方、固定於下方。 */
+export type DanmakuBehavior = "scroll" | "top" | "bottom"
 export type DanmakuSize = "small" | "medium" | "large"
+
+/**
+ * 一條可自由增減的時間軸軌道。純粹用來管理／分組彈幕（例如同時間有多則彈幕要分開排列），
+ * 不帶任何動畫行為 —— 行為是彈幕自己的屬性（見 DanmakuDraft.behavior）。
+ */
+export type Track = {
+  id: string
+  label: string
+}
 
 export type DanmakuDraft = {
   id: string
   time: number // 秒；允許至少 0.1 秒精度
   text: string
-  position: DanmakuPosition
+  /** 所屬軌道 id，對應 TrackStore 中的 Track；純粹決定顯示在時間軸的哪一列。 */
+  trackId: string
+  /** 動畫行為：決定顯示時長與移動方式。 */
+  behavior: DanmakuBehavior
   size: DanmakuSize
   color: string
 }
@@ -24,7 +37,7 @@ export const DANMAKU_COLORS: ReadonlyArray<{ label: string; value: string }> = [
   { label: "藍", value: "#4d96ff" },
 ]
 
-export const POSITION_LABELS: Readonly<Record<DanmakuPosition, string>> = {
+export const BEHAVIOR_LABELS: Readonly<Record<DanmakuBehavior, string>> = {
   scroll: "滑動",
   top: "上方",
   bottom: "下方",
@@ -40,6 +53,9 @@ export const SIZE_LABELS: Readonly<Record<DanmakuSize, string>> = {
 export const SCROLL_DURATION_SEC = 6
 /** 上方／下方固定彈幕的顯示總時長（秒）。 */
 export const FIXED_DURATION_SEC = 3
+
+/** 初始預設軌道，供第一次載入時建立示範資料使用。 */
+export const DEFAULT_TRACKS: ReadonlyArray<Track> = [{ id: "track-1", label: "軌道 1" }]
 
 /** 各尺寸對應的字級（px）。 */
 export const SIZE_FONT_PX: Readonly<Record<DanmakuSize, number>> = {
@@ -99,6 +115,25 @@ export type DraftStore = {
 }
 
 // ---------------------------------------------------------------------------
+// 軌道儲存契約（extension/content/main.ts 實作，僅存記憶體）
+// ---------------------------------------------------------------------------
+
+export type TrackStore = {
+  getAll(): ReadonlyArray<Track>
+  getById(id: string): Track | undefined
+  /** 新增一條軌道，回傳新軌道 id。 */
+  add(): string
+  update(id: string, patch: Partial<Omit<Track, "id">>): void
+  /**
+   * 刪除軌道；至少要保留一條軌道，若只剩最後一條則忽略。
+   * 刪除前，所有屬於該軌道的彈幕會被移到刪除後仍存在的第一條軌道。
+   */
+  remove(id: string): void
+  /** 訂閱資料變更；回傳取消訂閱函式。 */
+  subscribe(listener: () => void): () => void
+}
+
+// ---------------------------------------------------------------------------
 // UI 模組契約
 // ---------------------------------------------------------------------------
 
@@ -117,12 +152,10 @@ export const TIMELINE_ZOOM_LEVELS: ReadonlyArray<number> = [5, 10, 15, 30, 60]
 /** 預設縮放級距在 TIMELINE_ZOOM_LEVELS 中的索引。 */
 export const DEFAULT_ZOOM_INDEX = 2
 
-/** 時間軸的三條軌道，依彈幕位置分列，讓使用者一眼看出類型。 */
-export const TIMELINE_LANES: ReadonlyArray<DanmakuPosition> = ["scroll", "top", "bottom"]
-
 /** timeline-panel.ts 匯出的工廠函式簽章。 */
 export type TimelinePanelDeps = {
   store: DraftStore
+  trackStore: TrackStore
   player: PlayerHandle
   /** 讀取目前預覽開關狀態。 */
   isPreviewEnabled(): boolean
@@ -156,6 +189,7 @@ export type ToggleButtonHandle = {
 /** preview.ts 匯出的工廠函式簽章。 */
 export type PreviewDeps = {
   store: DraftStore
+  trackStore: TrackStore
   player: PlayerHandle
 }
 

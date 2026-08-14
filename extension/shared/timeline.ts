@@ -4,21 +4,21 @@
  * 只能從 "./types.js" import 型別與常數。
  */
 
-import type { DanmakuDraft, DanmakuPosition, DanmakuVisibility, TimelineWindow } from "./types.js"
+import type { DanmakuBehavior, DanmakuDraft, DanmakuVisibility, TimelineWindow } from "./types.js"
 import { FIXED_DURATION_SEC, SCROLL_DURATION_SEC } from "./types.js"
 
-/** 依彈幕的顯示位置取得其顯示總時長（秒）。 */
-export function getDurationForPosition(position: DanmakuPosition): number {
-  return position === "scroll" ? SCROLL_DURATION_SEC : FIXED_DURATION_SEC
+/** 依彈幕的動畫行為取得其顯示總時長（秒）。 */
+export function getDurationForBehavior(behavior: DanmakuBehavior): number {
+  return behavior === "scroll" ? SCROLL_DURATION_SEC : FIXED_DURATION_SEC
 }
 
 /**
- * 依彈幕的 time、position 與目前影片秒數，判定是否可見與動畫進度。
+ * 依彈幕的 time、behavior 與目前影片秒數，判定是否可見與動畫進度。
  * 顯示區間為 [draft.time, draft.time + duration)。
  * progress = (currentTime - draft.time) / duration，範圍 0..1。
  */
 export function getVisibility(draft: DanmakuDraft, currentTime: number): DanmakuVisibility {
-  const duration = getDurationForPosition(draft.position)
+  const duration = getDurationForBehavior(draft.behavior)
   const elapsed = currentTime - draft.time
 
   if (elapsed < 0 || elapsed >= duration) {
@@ -155,7 +155,7 @@ export function getPixelsPerSecond(window: TimelineWindow, width: number): numbe
 
 /**
  * 回傳「顯示區間與視窗有重疊」的彈幕。彈幕顯示區間為
- * [draft.time, draft.time + getDurationForPosition(draft.position))，
+ * [draft.time, draft.time + getDurationForBehavior(draft.behavior))，
  * 因此在 window.start 之前開始、但延續到視窗內的彈幕也會被包含。
  */
 export function getDraftsInWindow(
@@ -168,7 +168,7 @@ export function getDraftsInWindow(
 
   const result: DanmakuDraft[] = []
   for (const draft of drafts) {
-    const duration = getDurationForPosition(draft.position)
+    const duration = getDurationForBehavior(draft.behavior)
     const end = draft.time + duration
     if (end > window.start && draft.time < window.end) {
       result.push(draft)

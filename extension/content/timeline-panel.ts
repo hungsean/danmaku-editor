@@ -5,25 +5,24 @@
  */
 
 import type {
-  DanmakuPosition,
+  DanmakuBehavior,
   DanmakuSize,
   TimelinePanelDeps,
   TimelinePanelHandle,
   TimelineWindow,
 } from "../shared/types.js"
 import {
+  BEHAVIOR_LABELS,
   DANMAKU_COLORS,
   DEFAULT_ZOOM_INDEX,
-  POSITION_LABELS,
   SIZE_LABELS,
-  TIMELINE_LANES,
   TIMELINE_ZOOM_LEVELS,
 } from "../shared/types.js"
 import {
   clampTime,
   formatTime,
   getDraftsInWindow,
-  getDurationForPosition,
+  getDurationForBehavior,
   getPixelsPerSecond,
   getRulerTicks,
   getTimelineWindow,
@@ -61,7 +60,7 @@ type BlockEntry = {
   lastColor: string
   lastSelected: boolean
   lastEmpty: boolean
-  lastPosition: DanmakuPosition
+  lastTrackId: string
 }
 
 type TickEntry = {
@@ -70,7 +69,7 @@ type TickEntry = {
 }
 
 export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandle {
-  const { store, player, isPreviewEnabled, setPreviewEnabled } = deps
+  const { store, trackStore, player, isPreviewEnabled, setPreviewEnabled } = deps
 
   let zoomIndex = DEFAULT_ZOOM_INDEX
   let lastKnownTime = 0
@@ -206,14 +205,18 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
   rulerSpacer.className = "tp-ruler-spacer"
   labelsCol.appendChild(rulerSpacer)
 
-  const laneLabelEls = new Map<DanmakuPosition, HTMLDivElement>()
-  for (const position of TIMELINE_LANES) {
-    const label = document.createElement("div")
-    label.className = "tp-lane-label"
-    label.textContent = POSITION_LABELS[position]
-    labelsCol.appendChild(label)
-    laneLabelEls.set(position, label)
-  }
+  const addTrackRow = document.createElement("div")
+  addTrackRow.className = "tp-lane-add-row"
+  const addTrackBtn = document.createElement("button")
+  addTrackBtn.type = "button"
+  addTrackBtn.className = "tp-btn tp-lane-add-btn"
+  addTrackBtn.textContent = "＋ 新增軌道"
+  addTrackBtn.setAttribute("aria-label", "新增軌道")
+  addTrackBtn.addEventListener("click", () => {
+    trackStore.add()
+  })
+  addTrackRow.appendChild(addTrackBtn)
+  labelsCol.appendChild(addTrackRow)
 
   const trackCol = document.createElement("div")
   trackCol.className = "tp-track-col"
@@ -224,15 +227,6 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
 
   const lanesEl = document.createElement("div")
   lanesEl.className = "tp-lanes"
-
-  const laneTrackEls = new Map<DanmakuPosition, HTMLDivElement>()
-  for (const position of TIMELINE_LANES) {
-    const track = document.createElement("div")
-    track.className = "tp-lane-track"
-    track.dataset.position = position
-    lanesEl.appendChild(track)
-    laneTrackEls.set(position, track)
-  }
 
   const playhead = document.createElement("div")
   playhead.className = "tp-playhead"
@@ -254,12 +248,75 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
     player.seek(Math.max(0, time))
   }
   ruler.addEventListener("click", handleSeekClick)
-  for (const track of laneTrackEls.values()) {
-    track.addEventListener("click", (event) => {
-      // 若事件是從彈幕區塊冒泡上來的，區塊自己的 click handler 已經 stopPropagation，
-      // 走到這裡代表點的是空白處。
-      handleSeekClick(event)
-    })
+
+  // ---------------------------------------------------------------------
+  // 軌道列（依 trackStore 動態產生／增減）
+  // ---------------------------------------------------------------------
+
+  let laneLabelEls = new Map<string, HTMLDivElement>()
+  let laneTrackEls = new Map<string, HTMLDivElement>()
+
+  function rebuildLanes(): void {
+    for (const el of laneLabelEls.values()) el.remove()
+    lanesEl.replaceChildren()
+    laneLabelEls = new Map<string, HTMLDivElement>()
+    laneTrackEls = new Map<string, HTMLDivElement>()
+
+    const tracks = trackStore.getAll()
+    const canRemove = tracks.length > 1
+
+    for (const track of tracks) {
+      const label = document.createElement("div")
+      label.className = "tp-lane-label"
+
+      const nameInput = document.createElement("input")
+      nameInput.type = "text"
+      nameInput.className = "tp-lane-name-input"
+      nameInput.value = track.label
+      nameInput.setAttribute("aria-label", `軌道名稱：${track.label}`)
+      nameInput.addEventListener("change", () => {
+        const value = nameInput.value.trim()
+        trackStore.update(track.id, { label: value.length > 0 ? value : track.label })
+      })
+
+      const removeBtn = document.createElement("button")
+      removeBtn.type = "button"
+      removeBtn.className = "tp-lane-remove-btn"
+      removeBtn.textContent = "×"
+      removeBtn.setAttribute("aria-label", `刪除軌道：${track.label}`)
+      removeBtn.disabled = !canRemove
+      removeBtn.title = canRemove ? "刪除軌道" : "至少要保留一條軌道"
+      removeBtn.addEventListener("click", () => {
+        trackStore.remove(track.id)
+      })
+
+      label.appendChild(nameInput)
+      label.appendChild(removeBtn)
+      labelsCol.insertBefore(label, addTrackRow)
+      laneLabelEls.set(track.id, label)
+
+      const laneTrack = document.createElement("div")
+      laneTrack.className = "tp-lane-track"
+      laneTrack.dataset.trackId = track.id
+      laneTrack.addEventListener("click", handleSeekClick)
+      lanesEl.appendChild(laneTrack)
+      laneTrackEls.set(track.id, laneTrack)
+    }
+
+    // 軌道被刪除時，重新掛載仍存在的彈幕區塊到新的軌道父層（其餘會在下次 renderBlocks 時被回收）。
+    for (const [id, entry] of blockPool) {
+      const draft = store.getAll().find((d) => d.id === id)
+      if (!draft) continue
+      const parent = laneTrackEls.get(draft.trackId)
+      if (!parent) continue
+      if (entry.parent !== parent) {
+        parent.appendChild(entry.el)
+        entry.parent = parent
+        entry.lastTrackId = draft.trackId
+      }
+    }
+
+    rebuildTrackSelectOptions()
   }
 
   // ---------------------------------------------------------------------
@@ -282,13 +339,31 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
   detailTextInput.placeholder = "輸入彈幕文字"
   detailTextInput.setAttribute("aria-label", "彈幕文字")
 
-  const detailPositionSelect = document.createElement("select")
-  detailPositionSelect.setAttribute("aria-label", "位置")
-  for (const [value, label] of Object.entries(POSITION_LABELS) as Array<[DanmakuPosition, string]>) {
+  const detailTrackSelect = document.createElement("select")
+  detailTrackSelect.setAttribute("aria-label", "軌道")
+
+  function rebuildTrackSelectOptions(): void {
+    const previousValue = detailTrackSelect.value
+    detailTrackSelect.replaceChildren()
+    for (const track of trackStore.getAll()) {
+      const option = document.createElement("option")
+      option.value = track.id
+      option.textContent = track.label
+      detailTrackSelect.appendChild(option)
+    }
+    if (trackStore.getById(previousValue)) {
+      detailTrackSelect.value = previousValue
+    }
+  }
+  rebuildTrackSelectOptions()
+
+  const detailBehaviorSelect = document.createElement("select")
+  detailBehaviorSelect.setAttribute("aria-label", "動畫行為")
+  for (const [value, label] of Object.entries(BEHAVIOR_LABELS) as Array<[DanmakuBehavior, string]>) {
     const option = document.createElement("option")
     option.value = value
     option.textContent = label
-    detailPositionSelect.appendChild(option)
+    detailBehaviorSelect.appendChild(option)
   }
 
   const detailSizeSelect = document.createElement("select")
@@ -329,7 +404,8 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
   detailDeleteBtn.setAttribute("aria-label", "刪除彈幕")
 
   detailForm.appendChild(detailTextInput)
-  detailForm.appendChild(detailPositionSelect)
+  detailForm.appendChild(detailTrackSelect)
+  detailForm.appendChild(detailBehaviorSelect)
   detailForm.appendChild(detailSizeSelect)
   detailForm.appendChild(detailColorSelect)
   detailForm.appendChild(detailTimeInput)
@@ -379,10 +455,15 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
     focusNextByTime(id)
   })
 
-  detailPositionSelect.addEventListener("change", () => {
+  detailTrackSelect.addEventListener("change", () => {
     const id = store.getSelectedId()
     if (!id) return
-    store.update(id, { position: detailPositionSelect.value as DanmakuPosition })
+    store.update(id, { trackId: detailTrackSelect.value })
+  })
+  detailBehaviorSelect.addEventListener("change", () => {
+    const id = store.getSelectedId()
+    if (!id) return
+    store.update(id, { behavior: detailBehaviorSelect.value as DanmakuBehavior })
   })
   detailSizeSelect.addEventListener("change", () => {
     const id = store.getSelectedId()
@@ -414,7 +495,8 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
   const detailLastValues = {
     id: null as string | null,
     text: "",
-    position: "scroll" as DanmakuPosition,
+    trackId: "",
+    behavior: "scroll" as DanmakuBehavior,
     size: "medium" as DanmakuSize,
     color: "",
     time: Number.NaN,
@@ -442,9 +524,13 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
     }
     detailLastValues.text = draft.text
 
-    if (!isSameDraft || detailLastValues.position !== draft.position) {
-      detailPositionSelect.value = draft.position
-      detailLastValues.position = draft.position
+    if (!isSameDraft || detailLastValues.trackId !== draft.trackId) {
+      detailTrackSelect.value = draft.trackId
+      detailLastValues.trackId = draft.trackId
+    }
+    if (!isSameDraft || detailLastValues.behavior !== draft.behavior) {
+      detailBehaviorSelect.value = draft.behavior
+      detailLastValues.behavior = draft.behavior
     }
     if (!isSameDraft || detailLastValues.size !== draft.size) {
       detailSizeSelect.value = draft.size
@@ -476,8 +562,11 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
 
   const blockPool = new Map<string, BlockEntry>()
 
-  function createBlock(id: string, position: DanmakuPosition): BlockEntry {
-    const parent = laneTrackEls.get(position) as HTMLDivElement
+  rebuildLanes()
+  const unsubscribeTracks = trackStore.subscribe(rebuildLanes)
+
+  function createBlock(id: string, trackId: string): BlockEntry {
+    const parent = laneTrackEls.get(trackId) as HTMLDivElement
     const el = document.createElement("div")
     el.className = "tp-block"
     el.dataset.id = id
@@ -533,7 +622,7 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
       lastColor: "",
       lastSelected: false,
       lastEmpty: false,
-      lastPosition: position,
+      lastTrackId: trackId,
     }
   }
 
@@ -547,19 +636,21 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
       seen.add(draft.id)
       let entry = blockPool.get(draft.id)
       if (!entry) {
-        entry = createBlock(draft.id, draft.position)
+        entry = createBlock(draft.id, draft.trackId)
         blockPool.set(draft.id, entry)
       }
 
-      if (entry.lastPosition !== draft.position) {
-        const newParent = laneTrackEls.get(draft.position) as HTMLDivElement
-        newParent.appendChild(entry.el)
-        entry.parent = newParent
-        entry.lastPosition = draft.position
+      if (entry.lastTrackId !== draft.trackId) {
+        const newParent = laneTrackEls.get(draft.trackId)
+        if (newParent) {
+          newParent.appendChild(entry.el)
+          entry.parent = newParent
+        }
+        entry.lastTrackId = draft.trackId
       }
 
       const left = timeToX(draft.time, currentWindow, width)
-      const blockWidth = getDurationForPosition(draft.position) * pixelsPerSecond
+      const blockWidth = getDurationForBehavior(draft.behavior) * pixelsPerSecond
       if (entry.lastLeft !== left) {
         entry.el.style.left = `${left}px`
         entry.lastLeft = left
@@ -683,6 +774,7 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
 
   function destroy(): void {
     unsubscribe()
+    unsubscribeTracks()
     root.remove()
   }
 

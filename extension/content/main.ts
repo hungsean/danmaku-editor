@@ -13,7 +13,8 @@
  * 未來遷移 Chromium 時本檔案可原封不動沿用。
  */
 
-import type { DanmakuDraft, DraftStore, PlayerHandle } from "../shared/types.js"
+import type { DanmakuDraft, DraftStore, PlayerHandle, Track, TrackStore } from "../shared/types.js"
+import { DEFAULT_TRACKS } from "../shared/types.js"
 import { clampTime } from "../shared/timeline.js"
 import { createTimelinePanel } from "./timeline-panel.js"
 import { createPreview } from "./preview.js"
@@ -135,18 +136,20 @@ function createId(): string {
 }
 
 /**
- * 初次載入的示範彈幕，讓使用者立刻在時間軸上看見三種位置的差異；全部可刪除。
- * 內容刻意用中性佔位文字。
+ * 初次載入的示範彈幕，讓使用者立刻在時間軸上看見三種動畫行為的差異；全部可刪除。
+ * 內容刻意用中性佔位文字。三則彈幕共用同一條預設軌道（DEFAULT_TRACKS[0]），
+ * 示範「軌道只是分組容器，動畫行為各自獨立」這件事。
  */
 function createDemoDrafts(): DanmakuDraft[] {
+  const trackId = DEFAULT_TRACKS[0].id
   return [
-    { id: createId(), time: 2, text: "示範彈幕：滑動", position: "scroll", size: "medium", color: "#ffffff" },
-    { id: createId(), time: 5, text: "示範彈幕：上方", position: "top", size: "large", color: "#ffd93d" },
-    { id: createId(), time: 8, text: "示範彈幕：下方", position: "bottom", size: "medium", color: "#4d96ff" },
+    { id: createId(), time: 2, text: "示範彈幕：滑動", trackId, behavior: "scroll", size: "medium", color: "#ffffff" },
+    { id: createId(), time: 5, text: "示範彈幕：上方", trackId, behavior: "top", size: "large", color: "#ffd93d" },
+    { id: createId(), time: 8, text: "示範彈幕：下方", trackId, behavior: "bottom", size: "medium", color: "#4d96ff" },
   ]
 }
 
-function createStore(): DraftStore {
+function createStore(getDefaultTrackId: () => string): DraftStore {
   let drafts: DanmakuDraft[] = createDemoDrafts()
   let selectedId: string | null = drafts[0]?.id ?? null
   const listeners = new Set<() => void>()
@@ -168,7 +171,8 @@ function createStore(): DraftStore {
         id: createId(),
         time: 0,
         text: "",
-        position: "scroll",
+        trackId: getDefaultTrackId(),
+        behavior: "scroll",
         size: "medium",
         color: "#ffffff",
       }
@@ -205,6 +209,55 @@ function createStore(): DraftStore {
 }
 
 // ---------------------------------------------------------------------------
+// 軌道儲存：僅存記憶體，可自由增減；至少保留一條軌道。
+// ---------------------------------------------------------------------------
+
+function createTrackStore(
+  initial: ReadonlyArray<Track>,
+  onRemove: (removedId: string, fallbackId: string) => void,
+): TrackStore {
+  let tracks: Track[] = [...initial]
+  const listeners = new Set<() => void>()
+
+  const emit = (): void => {
+    for (const listener of listeners) listener()
+  }
+
+  return {
+    getAll: () => tracks,
+    getById: (id) => tracks.find((track) => track.id === id),
+    add: () => {
+      const id = createId()
+      const label = `軌道 ${tracks.length + 1}`
+      tracks = [...tracks, { id, label }]
+      emit()
+      return id
+    },
+    update: (id, patch) => {
+      let changed = false
+      tracks = tracks.map((track) => {
+        if (track.id !== id) return track
+        changed = true
+        return { ...track, ...patch }
+      })
+      if (changed) emit()
+    },
+    remove: (id) => {
+      if (tracks.length <= 1) return
+      const fallback = tracks.find((track) => track.id !== id)
+      if (!fallback || !tracks.some((track) => track.id === id)) return
+      onRemove(id, fallback.id)
+      tracks = tracks.filter((track) => track.id !== id)
+      emit()
+    },
+    subscribe: (listener) => {
+      listeners.add(listener)
+      return () => listeners.delete(listener)
+    },
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 啟動
 // ---------------------------------------------------------------------------
 
@@ -212,7 +265,18 @@ function mount(): void {
   if (document.getElementById(OVERLAY_HOST_ID)) return
 
   const player = createPlayerHandle()
-  const store = createStore()
+
+  // trackStore.remove() 需要能把被刪除軌道上的彈幕移到別的軌道，
+  // 但 store（draftStore）的預設軌道又需要參考 trackStore，因此用 let + 延遲賦值打破循環依賴。
+  let store!: DraftStore
+  const trackStore = createTrackStore(DEFAULT_TRACKS, (removedId, fallbackId) => {
+    for (const draft of store.getAll()) {
+      if (draft.trackId === removedId) {
+        store.update(draft.id, { trackId: fallbackId })
+      }
+    }
+  })
+  store = createStore(() => trackStore.getAll()[0]?.id ?? DEFAULT_TRACKS[0].id)
 
   let previewEnabled = true
   let panelOpen = true
@@ -224,7 +288,7 @@ function mount(): void {
   const overlayRoot = overlayHost.attachShadow({ mode: "open" })
   document.documentElement.appendChild(overlayHost)
 
-  const preview = createPreview({ store, player })
+  const preview = createPreview({ store, trackStore, player })
   // 預覽層要精準覆蓋影片視覺區域，因此包一層 fixed 容器逐幀對齊。
   const previewWrapper = document.createElement("div")
   previewWrapper.style.cssText = "position:fixed;pointer-events:none;display:none;"
@@ -250,6 +314,7 @@ function mount(): void {
 
   const panel = createTimelinePanel({
     store,
+    trackStore,
     player,
     isPreviewEnabled: () => previewEnabled,
     setPreviewEnabled: (enabled) => {
