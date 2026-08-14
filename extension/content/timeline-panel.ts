@@ -195,53 +195,46 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
   // 時間軸主體
   // ---------------------------------------------------------------------
 
+  // 整個時間軸主體是單一 CSS Grid：第一欄放軌道控制（名稱／刪除／新增軌道），
+  // 第二欄放時間軸內容（刻度尺／各軌道區域）。每一列（新增軌道列、每條軌道）
+  // 左右兩欄共用同一組 grid row，天生等高、對齊，不必再靠兩個獨立 flex 欄位湊出一樣的高度。
   const timelineWrap = document.createElement("div")
   timelineWrap.className = "tp-timeline-wrap"
 
-  const labelsCol = document.createElement("div")
-  labelsCol.className = "tp-labels-col"
-
   const rulerSpacer = document.createElement("div")
   rulerSpacer.className = "tp-ruler-spacer"
-  labelsCol.appendChild(rulerSpacer)
 
-  const addTrackRow = document.createElement("div")
-  addTrackRow.className = "tp-lane-add-row"
   const addTrackBtn = document.createElement("button")
   addTrackBtn.type = "button"
   addTrackBtn.className = "tp-btn tp-lane-add-btn"
-  addTrackBtn.textContent = "＋ 新增軌道"
+  addTrackBtn.textContent = "＋"
   addTrackBtn.setAttribute("aria-label", "新增軌道")
+  addTrackBtn.title = "新增軌道"
   addTrackBtn.addEventListener("click", () => {
     trackStore.add()
   })
-  addTrackRow.appendChild(addTrackBtn)
-  labelsCol.appendChild(addTrackRow)
-
-  const trackCol = document.createElement("div")
-  trackCol.className = "tp-track-col"
+  rulerSpacer.appendChild(addTrackBtn)
 
   const ruler = document.createElement("div")
   ruler.className = "tp-ruler"
   ruler.setAttribute("role", "presentation")
 
-  const lanesEl = document.createElement("div")
-  lanesEl.className = "tp-lanes"
+  // 疊在第二欄、橫跨所有列的覆蓋層：提供播放頭的定位基準，也是座標換算（x <-> time）唯一參照的矩形。
+  const trackArea = document.createElement("div")
+  trackArea.className = "tp-track-area"
 
   const playhead = document.createElement("div")
   playhead.className = "tp-playhead"
+  trackArea.appendChild(playhead)
 
-  trackCol.appendChild(ruler)
-  trackCol.appendChild(lanesEl)
-  trackCol.appendChild(playhead)
-
-  timelineWrap.appendChild(labelsCol)
-  timelineWrap.appendChild(trackCol)
+  timelineWrap.appendChild(rulerSpacer)
+  timelineWrap.appendChild(ruler)
+  timelineWrap.appendChild(trackArea)
 
   // 點擊刻度尺或軌道空白處 -> seek。
   function handleSeekClick(event: MouseEvent): void {
     if (!player.isReady()) return
-    const rect = trackCol.getBoundingClientRect()
+    const rect = trackArea.getBoundingClientRect()
     if (rect.width <= 0) return
     const x = event.clientX - rect.left
     const time = xToTime(x, currentWindow, rect.width)
@@ -258,16 +251,20 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
 
   function rebuildLanes(): void {
     for (const el of laneLabelEls.values()) el.remove()
-    lanesEl.replaceChildren()
+    for (const el of laneTrackEls.values()) el.remove()
     laneLabelEls = new Map<string, HTMLDivElement>()
     laneTrackEls = new Map<string, HTMLDivElement>()
 
     const tracks = trackStore.getAll()
     const canRemove = tracks.length > 1
 
-    for (const track of tracks) {
+    tracks.forEach((track, index) => {
+      // row 1 是刻度尺／新增軌道那一列，軌道列從 row 2 開始。
+      const gridRow = String(index + 2)
+
       const label = document.createElement("div")
       label.className = "tp-lane-label"
+      label.style.gridRow = gridRow
 
       const nameInput = document.createElement("input")
       nameInput.type = "text"
@@ -292,16 +289,17 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
 
       label.appendChild(nameInput)
       label.appendChild(removeBtn)
-      labelsCol.insertBefore(label, addTrackRow)
+      timelineWrap.insertBefore(label, trackArea)
       laneLabelEls.set(track.id, label)
 
       const laneTrack = document.createElement("div")
       laneTrack.className = "tp-lane-track"
+      laneTrack.style.gridRow = gridRow
       laneTrack.dataset.trackId = track.id
       laneTrack.addEventListener("click", handleSeekClick)
-      lanesEl.appendChild(laneTrack)
+      timelineWrap.insertBefore(laneTrack, trackArea)
       laneTrackEls.set(track.id, laneTrack)
-    }
+    })
 
     // 軌道被刪除時，重新掛載仍存在的彈幕區塊到新的軌道父層（其餘會在下次 renderBlocks 時被回收）。
     for (const [id, entry] of blockPool) {
@@ -592,7 +590,7 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
       if (!dragging.active && Math.abs(dx) < DRAG_THRESHOLD_PX) return
       dragging.active = true
 
-      const rect = trackCol.getBoundingClientRect()
+      const rect = trackArea.getBoundingClientRect()
       if (rect.width <= 0) return
       const x = event.clientX - rect.left
       const rawTime = xToTime(x, currentWindow, rect.width)
@@ -763,7 +761,7 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
 
     currentWindow = getTimelineWindow(lastKnownTime, TIMELINE_ZOOM_LEVELS[zoomIndex])
 
-    const width = trackCol.clientWidth
+    const width = trackArea.clientWidth
     if (width > 0) {
       renderTicks(width)
       renderBlocks(width)

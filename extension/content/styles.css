@@ -154,38 +154,43 @@
 
 /* ---------- 時間軸主體 ---------- */
 
+/*
+ * 整個時間軸主體是單一 grid：第一欄（128px）放軌道控制，第二欄放時間軸內容。
+ * row 1 固定 22px（新增軌道列／刻度尺），之後每條軌道各分到一個等高的 auto row，
+ * 左右兩欄的儲存格共用同一組 row，因此天生等高、對齊。
+ */
 .tp-timeline-wrap {
   flex: 1 1 auto;
   min-height: 0;
-  display: flex;
-}
-
-.tp-labels-col {
-  flex: 0 0 auto;
-  width: 128px;
-  display: flex;
-  flex-direction: column;
-  border-right: 1px solid var(--tp-border);
-  background: var(--tp-bg-elevated);
+  display: grid;
+  grid-template-columns: 128px 1fr;
+  grid-template-rows: 22px;
+  grid-auto-rows: 1fr;
 }
 
 .tp-ruler-spacer {
-  flex: 0 0 22px;
+  grid-column: 1;
+  grid-row: 1;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  padding: 2px;
+  border-right: 1px solid var(--tp-border);
   border-bottom: 1px solid var(--tp-border);
+  background: var(--tp-bg-elevated);
 }
 
 .tp-lane-label {
-  flex: 1 1 0;
+  grid-column: 1;
   min-height: 0;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 4px;
   padding: 3px 6px;
+  border-right: 1px solid var(--tp-border);
   border-bottom: 1px solid var(--tp-border);
-}
-
-.tp-lane-label:last-child {
-  border-bottom: none;
+  background: var(--tp-bg-elevated);
 }
 
 .tp-lane-name-input {
@@ -203,28 +208,18 @@
   color: var(--tp-danger);
 }
 
-.tp-lane-add-row {
-  flex: 0 0 auto;
-  padding: 4px 6px;
-}
-
 .tp-lane-add-btn {
   width: 100%;
-  font-size: 11px;
-}
-
-.tp-track-col {
-  position: relative;
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1;
 }
 
 .tp-ruler {
+  grid-column: 2;
+  grid-row: 1;
   position: relative;
-  flex: 0 0 22px;
+  min-width: 0;
   border-bottom: 1px solid var(--tp-border);
   overflow: hidden;
   background: var(--tp-bg);
@@ -254,26 +249,25 @@
   font-variant-numeric: tabular-nums;
 }
 
-.tp-lanes {
-  position: relative;
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
 .tp-lane-track {
+  grid-column: 2;
   position: relative;
-  flex: 1 1 0;
   min-height: 0;
+  min-width: 0;
   border-bottom: 1px solid var(--tp-border);
   background: var(--tp-bg-track);
   overflow: hidden;
   cursor: crosshair;
 }
 
-.tp-lane-track:last-child {
-  border-bottom: none;
+/* 疊在第二欄、橫跨所有列（刻度尺 + 全部軌道）的覆蓋層，純粹作為播放頭與座標換算的定位基準。 */
+.tp-track-area {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  position: relative;
+  pointer-events: none;
+  min-width: 0;
+  min-height: 0;
 }
 
 .tp-playhead {
