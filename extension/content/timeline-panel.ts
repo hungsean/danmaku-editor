@@ -25,6 +25,7 @@ import {
   getDurationForBehavior,
   getPixelsPerSecond,
   getRulerTicks,
+  getSecondsPerPixel,
   getTimelineWindow,
   snapTime,
   timeToX,
@@ -73,6 +74,8 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
 
   let zoomIndex = DEFAULT_ZOOM_INDEX
   let lastKnownTime = 0
+  /** 使用者在軌道區域滾動滾輪累積的視窗位移（秒）；只移動可視範圍，不影響播放時間點。 */
+  let scrollOffsetSec = 0
   let currentWindow: TimelineWindow = getTimelineWindow(0, TIMELINE_ZOOM_LEVELS[zoomIndex])
 
   let dragging: {
@@ -241,6 +244,19 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
     player.seek(Math.max(0, time))
   }
   ruler.addEventListener("click", handleSeekClick)
+
+  // 在刻度尺或軌道區域滾動滾輪 -> 平移時間軸可視範圍（不影響播放頭時間點）。
+  function handleTimelineWheel(event: WheelEvent): void {
+    const target = event.target
+    if (!(target instanceof Element) || !target.closest(".tp-ruler, .tp-lane-track")) return
+    const width = trackArea.clientWidth
+    if (width <= 0) return
+    event.preventDefault()
+    const delta = event.deltaX !== 0 ? event.deltaX : event.deltaY
+    const secondsPerPixel = getSecondsPerPixel(currentWindow, width)
+    scrollOffsetSec += delta * secondsPerPixel
+  }
+  timelineWrap.addEventListener("wheel", handleTimelineWheel, { passive: false })
 
   // ---------------------------------------------------------------------
   // 軌道列（依 trackStore 動態產生／增減）
@@ -749,6 +765,7 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
   let lastPlaying: boolean | null = null
   let lastReady: boolean | null = null
   let lastTimeLabel = ""
+  let lastPlayheadX = Number.NaN
 
   function tick(): void {
     const ready = player.isReady()
@@ -782,12 +799,21 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
 
     updateDetailReadyState()
 
-    currentWindow = getTimelineWindow(lastKnownTime, TIMELINE_ZOOM_LEVELS[zoomIndex])
+    const baseWindow = getTimelineWindow(lastKnownTime, TIMELINE_ZOOM_LEVELS[zoomIndex])
+    currentWindow = {
+      start: baseWindow.start + scrollOffsetSec,
+      end: baseWindow.end + scrollOffsetSec,
+    }
 
     const width = trackArea.clientWidth
     if (width > 0) {
       renderTicks(width)
       renderBlocks(width)
+      const playheadX = timeToX(lastKnownTime, currentWindow, width)
+      if (lastPlayheadX !== playheadX) {
+        playhead.style.left = `${playheadX}px`
+        lastPlayheadX = playheadX
+      }
     }
   }
 
