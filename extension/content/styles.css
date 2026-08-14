@@ -57,6 +57,8 @@
 /* ---------- 通用控制項 ---------- */
 
 .tp-root button {
+  -webkit-appearance: none;
+  appearance: none;
   cursor: pointer;
   border: 1px solid var(--tp-border);
   background: var(--tp-bg-elevated);
@@ -65,6 +67,8 @@
   padding: 5px 10px;
   font-size: 12px;
   flex-shrink: 0;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .tp-root button:hover:not(:disabled) {

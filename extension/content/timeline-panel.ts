@@ -718,7 +718,11 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
           entry.el.appendChild(label)
           entry.label = label
         }
-        entry.label.textContent = formatTime(tick.time)
+        // 同樣避免每幀重建 text node（理由見 tick() 的註解）。
+        const labelText = formatTime(tick.time)
+        if (entry.label.textContent !== labelText) {
+          entry.label.textContent = labelText
+        }
       } else if (entry.label) {
         entry.label.remove()
         entry.label = null
@@ -736,6 +740,16 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
 
   updateZoomUi()
 
+  // tick() 每幀都跑，因此所有寫入都必須先比對舊值。
+  // 尤其是 textContent：即使賦同一個字串，瀏覽器也會銷毀舊 text node 再建新的。
+  // Chrome 判定 click 是取 mousedown 與 mouseup 命中節點的共同祖先，
+  // 點在按鈕文字上時命中的正是那個 text node；一次正常點擊橫跨數幀，
+  // 放開時當初按下的 text node 已被換掉且脫離 DOM，click 事件因此不會發送——
+  // 症狀就是「點按鈕文字沒反應，點邊緣 padding 才有反應」。
+  let lastPlaying: boolean | null = null
+  let lastReady: boolean | null = null
+  let lastTimeLabel = ""
+
   function tick(): void {
     const ready = player.isReady()
     const currentTime = player.getCurrentTime()
@@ -745,17 +759,26 @@ export function createTimelinePanel(deps: TimelinePanelDeps): TimelinePanelHandl
       lastKnownTime = currentTime
     }
 
-    playPauseBtn.disabled = !ready
-    playPauseBtn.textContent = playing ? "暫停" : "播放"
-    playPauseBtn.setAttribute("aria-label", playing ? "暫停播放" : "開始播放")
-    playPauseBtn.title = ready ? "" : NOT_READY_HINT
+    if (lastPlaying !== playing) {
+      playPauseBtn.textContent = playing ? "暫停" : "播放"
+      playPauseBtn.setAttribute("aria-label", playing ? "暫停播放" : "開始播放")
+      lastPlaying = playing
+    }
 
-    timeText.textContent = currentTime === null ? "--:--.-" : formatTime(currentTime)
+    if (lastReady !== ready) {
+      playPauseBtn.disabled = !ready
+      playPauseBtn.title = ready ? "" : NOT_READY_HINT
+      addBtn.disabled = !ready
+      addBtn.title = ready ? "" : NOT_READY_HINT
+      readyHint.hidden = ready
+      lastReady = ready
+    }
 
-    addBtn.disabled = !ready
-    addBtn.title = ready ? "" : NOT_READY_HINT
-
-    readyHint.hidden = ready
+    const timeLabel = currentTime === null ? "--:--.-" : formatTime(currentTime)
+    if (lastTimeLabel !== timeLabel) {
+      timeText.textContent = timeLabel
+      lastTimeLabel = timeLabel
+    }
 
     updateDetailReadyState()
 
